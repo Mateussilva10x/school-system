@@ -1,0 +1,19 @@
+.grades {
+  margin: 16px;
+
+  .filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  table {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}

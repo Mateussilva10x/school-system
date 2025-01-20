@@ -1,0 +1,27 @@
+.class-diary {
+  margin: 16px;
+
+  .filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .entry {
+    margin-bottom: 24px;
+  }
+
+  .entry-field {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .entries {
+    margin-top: 32px;
+  }
+}
