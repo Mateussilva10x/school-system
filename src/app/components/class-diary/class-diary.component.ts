@@ -27,6 +27,7 @@ export class ClassDiaryComponent {
   subjects = [
     { id: 'math', name: 'Matemática' },
     { id: 'history', name: 'História' },
+    { id: 'english', name: 'Inglês' },
   ];
 
   selectedSubject: string | null = null;
