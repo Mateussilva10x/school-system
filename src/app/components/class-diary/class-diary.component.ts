@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { MaterialModule } from '../../material.module';
 import { FormsModule } from '@angular/forms';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 interface ClassDiaryEntry {
   day: string;
@@ -33,9 +34,16 @@ export class ClassDiaryComponent {
   selectedDay: string | null = null;
 
   currentEntry: Partial<ClassDiaryEntry> = {};
-  entries: ClassDiaryEntry[] = [];
+
+  private diaryEntriesSubject = new BehaviorSubject<ClassDiaryEntry[]>([]);
+  diaryEntries$: Observable<ClassDiaryEntry[]> = this.diaryEntriesSubject.asObservable();
+
 
   displayedColumns = ['day', 'class', 'subject', 'notes'];
+
+  get diaryEntries(): ClassDiaryEntry[] {
+    return this.diaryEntriesSubject.getValue();
+  }
 
   onFilterChange(): void {
     this.currentEntry = {
@@ -46,10 +54,6 @@ export class ClassDiaryComponent {
     };
   }
 
-  onDayChange(): void {
-    this.onFilterChange();
-  }
-
   saveEntry(): void {
     if (
       this.selectedDay &&
@@ -57,14 +61,18 @@ export class ClassDiaryComponent {
       this.selectedSubject &&
       this.currentEntry.notes
     ) {
-      this.entries.push({
+      const newEntry: ClassDiaryEntry = {
         day: this.selectedDay,
         class: this.selectedClass,
         subject: this.selectedSubject,
         notes: this.currentEntry.notes,
-      });
+      };
+
+      const updatedEntries = [...this.diaryEntries, newEntry];
+      this.diaryEntriesSubject.next(updatedEntries);
+
       alert('Diário salvo com sucesso!');
-      this.currentEntry.notes = ''; // Limpa o campo de notas
+      this.currentEntry.notes = '';
     } else {
       alert('Por favor, preencha todas as informações antes de salvar.');
     }
