@@ -34,6 +34,16 @@
         </mat-select>
       </mat-form-field>
     </div>
+    <div class="filter-item">
+      <mat-form-field appearance="fill">
+        <mat-label>Bimestre</mat-label>
+        <mat-select formControlName="bimester">
+          @for (bimester of bimesters; track $index) {
+            <mat-option [value]="bimester">{{ bimester }}º Bimestre</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
     <div class="actions">
       <button mat-raised-button color="primary" (click)="onFilterChange()">
         Atualizar Filtros
@@ -43,32 +53,41 @@
 
   <div class="table-container">
     <table mat-table [dataSource]="filteredStudents" class="mat-elevation-z8">
-      <ng-container matColumnDef="student">
+      <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Aluno</th>
         <td mat-cell *matCellDef="let student">{{ student.name }}</td>
       </ng-container>
 
-      <ng-container matColumnDef="grade">
-        <th mat-header-cell *matHeaderCellDef>Nota</th>
+      <ng-container matColumnDef="gradeP1">
+        <th mat-header-cell *matHeaderCellDef>Prova P1</th>
         <td mat-cell *matCellDef="let student">
-          <mat-form-field appearance="fill">
-            <input
-              matInput
-              type="number"
-              [formControlName]="'grade_' + student.id"
-              placeholder="Nota"
-            />
-            @if (gradesForm.get('grade_' + student.id)?.invalid) {
-              <mat-error>
-                Nota deve ser entre 0 e 10
-              </mat-error>
-            }
-          </mat-form-field>
+          <input matInput type="number" [formControlName]="'gradeP1_' + student.id" (input)="calculateAverage(student.id)" />
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="['student', 'grade']"></tr>
-      <tr mat-row *matRowDef="let row; columns: ['student', 'grade']"></tr>
+      <ng-container matColumnDef="gradeP2">
+        <th mat-header-cell *matHeaderCellDef>Prova P2</th>
+        <td mat-cell *matCellDef="let student">
+          <input matInput type="number" [formControlName]="'gradeP2_' + student.id" (input)="calculateAverage(student.id)" />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="average">
+        <th mat-header-cell *matHeaderCellDef>Média</th>
+        <td mat-cell *matCellDef="let student">
+          <input matInput type="text" [formControlName]="'average_' + student.id" readonly />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="gradeRec">
+        <th mat-header-cell *matHeaderCellDef>Recuperação</th>
+        <td mat-cell *matCellDef="let student">
+          <input matInput type="number" [formControlName]="'gradeRec_' + student.id" />
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="['name', 'gradeP1', 'gradeP2', 'average', 'gradeRec']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['name', 'gradeP1', 'gradeP2', 'average', 'gradeRec'];"></tr>
     </table>
   </div>
 
