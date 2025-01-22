@@ -3,11 +3,15 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MaterialModule } from '../../material.module';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { MatDialog } from '@angular/material/dialog';
+import { NewStudentComponent, StudentFormData } from '../new-student/new-student.component';
+import { ConfirmDialogData, ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface Student {
   id: number;
   name: string;
   class: string;
+  year: number;
 }
 
 @Component({
@@ -17,25 +21,58 @@ export interface Student {
   templateUrl: './students.component.html',
   styleUrl: './students.component.scss'
 })
-export class StudentsComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'name', 'class', 'actions'];
-  dataSource = new MatTableDataSource<Student>([
-    { id: 1, name: 'João Silva', class: '6º Ano' },
-    { id: 2, name: 'Maria Oliveira', class: '7º Ano' },
-    { id: 3, name: 'Carlos Souza', class: '8º Ano' },
-  ]);
+export class StudentsComponent{
+  currentYear = new Date().getFullYear();
+  years: number[] = [this.currentYear, this.currentYear + 1];
+  turmas: string[] = ['6º ano', '7º ano', '8º ano', '9º ano'];
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  selectedYear: number = this.currentYear;
+  selectedClass: string = '6º ano';
 
-  constructor() {}
+  students: Student[] = [];
+  filteredStudents: Student[] = [];
 
-  ngOnInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+  constructor(private dialog: MatDialog) {}
+
+  applyFilters(): void {
+    this.filteredStudents = this.students.filter(
+      (student) =>
+        student.year === this.selectedYear && student.class === this.selectedClass
+    );
   }
 
-  generateReport(studentId: number): void {
-    alert(`Boletim gerado para o aluno com ID: ${studentId}`);
+  openStudentForm(): void {
+    const dialogRef = this.dialog.open(NewStudentComponent, {
+      width: '400px',
+      data: { year: this.selectedYear, class: this.selectedClass } as StudentFormData,
+    });
+
+    dialogRef.afterClosed().subscribe((result: StudentFormData | undefined) => {
+      if (result && result.name && result.age && result.class && result.year) {
+        this.students.push(result as Student);
+        this.applyFilters();
+        alert('Aluno adicionado com sucesso!');
+      }
+    });
+  }
+
+  generateReport(student: Student): void {
+    const dialogData: ConfirmDialogData = {
+      title: 'Gerar Boletim',
+      message: `Deseja realmente gerar o boletim para o aluno ${student.name}?`,
+      confirmText: 'Sim, Gerar',
+      cancelText: 'Cancelar',
+    };
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: dialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        alert(`Boletim gerado para ${student.name}!`);
+      }
+    });
   }
 }
