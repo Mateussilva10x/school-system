@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { MaterialModule } from '../../material.module';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Student } from '../../interfaces/student';
+import { StudentStore } from '../../stores/student.store';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-grades',
   standalone: true,
-  imports: [MaterialModule, ReactiveFormsModule, FormsModule],
+  imports: [MaterialModule, ReactiveFormsModule, FormsModule, HttpClientModule],
   templateUrl: './grades.component.html',
   styleUrl: './grades.component.scss',
 })
@@ -15,96 +18,32 @@ export class GradesComponent implements OnInit {
   classes = ['6 ano', '7 ano', '8 ano', '9 ano'];
   subjects = ['Matemática', 'Português', 'Ciências'];
   bimesters = [1, 2, 3, 4];
-  filteredStudents: {
-    id: number;
-    name: string;
-    year: number;
-    class: string;
-    grades: { subject: string; bimester: number; gradeP1: number; gradeP2: number; gradeRec?: number; average: number }[];
-  }[] = [];
-  students = [
-    {
-      id: 1,
-      name: 'João Silva',
-      year: 2024,
-      class: '6 ano',
-      grades: [],
-    },
-    {
-      id: 2,
-      name: 'Maria Oliveira',
-      year: 2024,
-      class: '6 ano',
-      grades: [],
-    },
-    {
-      id: 3,
-      name: 'Carlos Santos',
-      year: 2024,
-      class: '6 ano',
-      grades: [],
-    },
-  ];
+  students = this.studentStore.studentsSignal;
+  loading = this.studentStore.loadingSignal;
+  displayedColumns = ['name', 'gradeP1', 'gradeP2', 'average', 'gradeRec'];
 
-  constructor(private fb: FormBuilder) {}
+
+  constructor(private fb: FormBuilder, private studentStore: StudentStore) {}
 
   ngOnInit(): void {
     this.gradesForm = this.fb.group({
       year: [2024, Validators.required],
       class: ['6 ano', Validators.required],
       subject: ['Matemática', Validators.required],
-      bimester: [1, Validators.required],
+      bimester: ['1', Validators.required],
     });
 
-    this.filteredStudents = this.students.filter(
-      (student) => student.year === 2024 && student.class === '6 ano'
-    );
-
-    this.addGradeControls();
-  }
-
-  addGradeControls(): void {
-    this.filteredStudents.forEach((student) => {
-      const p1ControlName = `gradeP1_${student.id}`;
-      const p2ControlName = `gradeP2_${student.id}`;
-      const recControlName = `gradeRec_${student.id}`;
-      const averageControlName = `average_${student.id}`;
-
-      if (!this.gradesForm.contains(p1ControlName)) {
-        this.gradesForm.addControl(
-          p1ControlName,
-          this.fb.control(null, [Validators.required, Validators.min(0), Validators.max(10)])
-        );
-      }
-
-      if (!this.gradesForm.contains(p2ControlName)) {
-        this.gradesForm.addControl(
-          p2ControlName,
-          this.fb.control(null, [Validators.required, Validators.min(0), Validators.max(10)])
-        );
-      }
-
-      if (!this.gradesForm.contains(recControlName)) {
-        this.gradesForm.addControl(recControlName, this.fb.control(null, [Validators.min(0), Validators.max(10)]));
-      }
-
-      if (!this.gradesForm.contains(averageControlName)) {
-        this.gradesForm.addControl(averageControlName, this.fb.control({ value: null, disabled: true }));
-      }
-    });
+    this.onFilterChange();
   }
 
   onFilterChange(): void {
-    const { year, class: selectedClass } = this.gradesForm.value;
-    this.filteredStudents = this.students.filter(
-      (student) => student.year === year && student.class === selectedClass
-    );
-
-    this.addGradeControls();
+    const { year, class: className } = this.gradesForm.value;
+    console.log(year, className)
+    this.studentStore.loadStudents(year, className);
   }
 
   onSubjectChange(): void {
-    this.filteredStudents.forEach((student) => {
+    this.students().forEach((student) => {
       this.gradesForm.get(`gradeP1_${student.id}`)?.reset();
       this.gradesForm.get(`gradeP2_${student.id}`)?.reset();
       this.gradesForm.get(`gradeRec_${student.id}`)?.reset();
@@ -112,32 +51,36 @@ export class GradesComponent implements OnInit {
     });
   }
 
-  calculateAverage(studentId: number): void {
-    const p1 = this.gradesForm.get(`gradeP1_${studentId}`)?.value;
-    const p2 = this.gradesForm.get(`gradeP2_${studentId}`)?.value;
-
-    if (p1 !== null && p2 !== null) {
-      const average = (p1 + p2) / 2;
-      this.gradesForm.get(`average_${studentId}`)?.setValue(average.toFixed(2));
+  getFormControl(controlName: string): FormControl {
+    const control = this.gradesForm.get(controlName);
+    if (!control) {
+      throw new Error(`Form control '${controlName}' not found in the form.`);
     }
+    return control as FormControl;
   }
 
   saveGrades(): void {
-    if (this.gradesForm.valid) {
-      const { subject, bimester } = this.gradesForm.value;
+    const studentsWithGrades: Student[] = this.students().map((student) => ({
+      ...student,
+      grades: [
+        {
+          subject: this.gradesForm.value.subject,
+          bimester: this.gradesForm.value.bimester,
+          gradeP1: this.gradesForm.get(`gradeP1_${student.id}`)?.value,
+          gradeP2: this.gradesForm.get(`gradeP2_${student.id}`)?.value,
+          gradeRec: this.gradesForm.get(`gradeRec_${student.id}`)?.value,
+          average: this.gradesForm.get(`average_${student.id}`)?.value,
+        },
+      ],
+    }));
 
-      const grades = this.filteredStudents.map((student) => ({
-        studentId: student.id,
-        subject,
-        bimester,
-        gradeP1: this.gradesForm.get(`gradeP1_${student.id}`)?.value,
-        gradeP2: this.gradesForm.get(`gradeP2_${student.id}`)?.value,
-        gradeRec: this.gradesForm.get(`gradeRec_${student.id}`)?.value,
-        average: this.gradesForm.get(`average_${student.id}`)?.value,
-      }));
+    this.studentStore.saveGrades(studentsWithGrades);
+  }
 
-      console.log('Grades saved:', grades);
-      alert('Notas salvas com sucesso!');
-    }
+  calculateAverage(studentId: number): void {
+    const gradeP1 = this.gradesForm.get(`gradeP1_${studentId}`)?.value || 0;
+    const gradeP2 = this.gradesForm.get(`gradeP2_${studentId}`)?.value || 0;
+    const average = (gradeP1 + gradeP2) / 2;
+    this.gradesForm.get(`average_${studentId}`)?.setValue(average);
   }
 }

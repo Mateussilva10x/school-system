@@ -6,13 +6,8 @@ import { MatSort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { NewStudentComponent, StudentFormData } from '../new-student/new-student.component';
 import { ConfirmDialogData, ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { Student } from '../../interfaces/student';
 
-export interface Student {
-  id: number;
-  name: string;
-  class: string;
-  year: number;
-}
 
 @Component({
   selector: 'app-students',

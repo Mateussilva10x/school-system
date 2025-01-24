@@ -10,6 +10,7 @@ import { TeachersComponent } from './app/components/teachers/teachers.component'
 import { MaterialModule } from './app/material.module';
 import { ClassesComponent } from './app/components/classes/classes.component';
 import { ClassDiaryComponent } from './app/components/class-diary/class-diary.component';
+import { HttpClientModule } from '@angular/common/http';
 
 
 const routes: Routes = [
@@ -24,6 +25,6 @@ const routes: Routes = [
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    importProvidersFrom(MaterialModule, BrowserAnimationsModule),
+    importProvidersFrom(MaterialModule, BrowserAnimationsModule, HttpClientModule),
   ],
 }).catch((err) => console.error(err));
