@@ -50,6 +50,7 @@
       <td mat-cell *matCellDef="let student">
         <input
           matInput
+          *ngIf="gradesForm.get('gradeP1_' + student.id)"
           [formControl]="getFormControl('gradeP1_' + student.id)"
           type="number"
           (input)="calculateAverage(student.id)"
@@ -62,6 +63,7 @@
       <td mat-cell *matCellDef="let student">
         <input
           matInput
+          *ngIf="gradesForm.get('gradeP2_' + student.id)"
           [formControl]="getFormControl('gradeP2_' + student.id)"
           type="number"
           (input)="calculateAverage(student.id)"
@@ -74,6 +76,7 @@
       <td mat-cell *matCellDef="let student">
         <input
           matInput
+          *ngIf="gradesForm.get('average_' + student.id)"
           [formControl]="getFormControl('average_' + student.id)"
           type="number"
           readonly
@@ -86,6 +89,7 @@
       <td mat-cell *matCellDef="let student">
         <input
           matInput
+          *ngIf="gradesForm.get('gradeRec_' + student.id)"
           [formControl]="getFormControl('gradeRec_' + student.id)"
           type="number"
         />

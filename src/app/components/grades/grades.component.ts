@@ -38,12 +38,42 @@ export class GradesComponent implements OnInit {
 
   onFilterChange(): void {
     const { year, class: className } = this.gradesForm.value;
-    console.log(year, className)
     this.studentStore.loadStudents(year, className);
+
+    setTimeout(() => {
+      this.students().forEach((student) => {
+        this.addStudentControls(student.id);
+      });
+    }, 0);
   }
+
+  addStudentControls(studentId: number): void {
+    const controls = [
+      `gradeP1_${studentId}`,
+      `gradeP2_${studentId}`,
+      `gradeRec_${studentId}`,
+      `average_${studentId}`,
+    ];
+
+    controls.forEach((controlName) => {
+      if (!this.gradesForm.contains(controlName)) {
+        this.gradesForm.addControl(
+          controlName,
+          this.fb.control(
+            controlName.startsWith('average_') ? { value: null, disabled: true } : null,
+            controlName.startsWith('average_')
+              ? []
+              : [Validators.required, Validators.min(0), Validators.max(10)]
+          )
+        );
+      }
+    });
+  }
+
 
   onSubjectChange(): void {
     this.students().forEach((student) => {
+      this.addStudentControls(student.id);
       this.gradesForm.get(`gradeP1_${student.id}`)?.reset();
       this.gradesForm.get(`gradeP2_${student.id}`)?.reset();
       this.gradesForm.get(`gradeRec_${student.id}`)?.reset();
