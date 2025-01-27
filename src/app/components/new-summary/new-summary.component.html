@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Novo Resumo de Aula</h2>
+<form [formGroup]="summaryForm" class="summary-form">
+  <mat-form-field appearance="outline">
+    <mat-label>Ano Escolar</mat-label>
+    <mat-select formControlName="year">
+      <mat-option *ngFor="let year of [2023, 2024, 2025]" [value]="year">{{ year }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Turma</mat-label>
+    <mat-select formControlName="schoolClass">
+      <mat-option *ngFor="let turma of ['6 ano', '7 ano', '8 ano']" [value]="turma">{{ turma }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Matéria</mat-label>
+    <mat-select formControlName="subject">
+      <mat-option *ngFor="let subject of ['Matemática', 'Português', 'Ciências']" [value]="subject">
+        {{ subject }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Data</mat-label>
+    <input matInput [matDatepicker]="picker" formControlName="date" />
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="summary-field">
+    <mat-label>Resumo da Aula</mat-label>
+    <textarea matInput formControlName="summary" rows="5"></textarea>
+  </mat-form-field>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="saveSummary()" [disabled]="!summaryForm.valid">Salvar</button>
+    <button mat-button mat-dialog-close>Cancelar</button>
+  </div>
+</form>

@@ -1,34 +1,24 @@
-.class-diary {
-  margin: 16px;
+.filters {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  margin-bottom: 24px;
+  padding: 24px;
+  flex-wrap: wrap;
 
-  .filters {
+  .filter-form {
     display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 10px;
   }
+}
 
-  .entry {
-    margin-bottom: 24px;
-  }
+.summaries {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
 
-  .entry-field {
-    width: 100%;
-    margin-bottom: 16px;
-  }
-
-  .actions {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .entries {
-    margin-top: 32px;
-  }
-
-  .no-entries {
-    text-align: center;
-    font-size: 1.2em;
-    color: gray;
-    margin-top: 24px;
-  }
+mat-card {
+  padding: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }

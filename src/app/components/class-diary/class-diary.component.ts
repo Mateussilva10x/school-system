@@ -1,80 +1,61 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MaterialModule } from '../../material.module';
-import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, Observable } from 'rxjs';
-
-interface ClassDiaryEntry {
-  day: string;
-  class: string;
-  subject: string;
-  notes: string;
-}
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { NewSummaryComponent } from '../new-summary/new-summary.component';
+import { ClassDiaryStore } from '../../stores/class-diary.store';
+import { MAT_DATE_LOCALE, MatNativeDateModule, NativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @Component({
   selector: 'app-class-diary',
   standalone: true,
-  imports: [MaterialModule, FormsModule],
+  imports: [MaterialModule, ReactiveFormsModule, NativeDateModule],
   templateUrl: './class-diary.component.html',
-  styleUrl: './class-diary.component.scss'
+  styleUrl: './class-diary.component.scss',
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
+    MatDatepickerModule,
+    MatNativeDateModule
+  ],
 })
-export class ClassDiaryComponent {
+export class ClassDiaryComponent implements OnInit {
+  filterForm!: FormGroup;
+  summaries: any[] = [];
 
-  weekdays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
-  classes = [
-    { id: 'a', name: 'Turma A' },
-    { id: 'b', name: 'Turma B' },
-  ];
-  subjects = [
-    { id: 'math', name: 'Matemática' },
-    { id: 'history', name: 'História' },
-  ];
+  constructor(
+    private fb: FormBuilder,
+    private dialog: MatDialog,
+    private classDiaryStore: ClassDiaryStore
+  ) {}
 
-  selectedSubject: string | null = null;
-  selectedClass: string | null = null;
-  selectedDay: string | null = null;
+  ngOnInit(): void {
+    this.filterForm = this.fb.group({
+      year: [2024, Validators.required],
+      schoolClass: ['6 ano', Validators.required],
+      subject: ['Matemática', Validators.required],
+      date: [null],
+    });
 
-  currentEntry: Partial<ClassDiaryEntry> = {};
-
-  private diaryEntriesSubject = new BehaviorSubject<ClassDiaryEntry[]>([]);
-  diaryEntries$: Observable<ClassDiaryEntry[]> = this.diaryEntriesSubject.asObservable();
-
-
-  displayedColumns = ['day', 'class', 'subject', 'notes'];
-
-  get diaryEntries(): ClassDiaryEntry[] {
-    return this.diaryEntriesSubject.getValue();
+    this.updateFilters();
   }
 
-  onFilterChange(): void {
-    this.currentEntry = {
-      day: this.selectedDay ?? '',
-      class: this.selectedClass ?? '',
-      subject: this.selectedSubject ?? '',
-      notes: '',
-    };
+  updateFilters(): void {
+    const filters = this.filterForm.value;
+    this.classDiaryStore.fetchSummaries(filters).subscribe((res) => {
+      this.summaries = res;
+    });
   }
 
-  saveEntry(): void {
-    if (
-      this.selectedDay &&
-      this.selectedClass &&
-      this.selectedSubject &&
-      this.currentEntry.notes
-    ) {
-      const newEntry: ClassDiaryEntry = {
-        day: this.selectedDay,
-        class: this.selectedClass,
-        subject: this.selectedSubject,
-        notes: this.currentEntry.notes,
-      };
+  openNewSummaryModal(): void {
+    const dialogRef = this.dialog.open(NewSummaryComponent, {
+      width: '500px',
+    });
 
-      const updatedEntries = [...this.diaryEntries, newEntry];
-      this.diaryEntriesSubject.next(updatedEntries);
-
-      alert('Diário salvo com sucesso!');
-      this.currentEntry.notes = '';
-    } else {
-      alert('Por favor, preencha todas as informações antes de salvar.');
-    }
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.updateFilters();
+      }
+    });
   }
 }

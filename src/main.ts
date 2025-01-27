@@ -11,6 +11,7 @@ import { MaterialModule } from './app/material.module';
 import { ClassesComponent } from './app/components/classes/classes.component';
 import { ClassDiaryComponent } from './app/components/class-diary/class-diary.component';
 import { HttpClientModule } from '@angular/common/http';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 
 const routes: Routes = [
@@ -26,5 +27,6 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
     importProvidersFrom(MaterialModule, BrowserAnimationsModule, HttpClientModule),
+    { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
   ],
 }).catch((err) => console.error(err));

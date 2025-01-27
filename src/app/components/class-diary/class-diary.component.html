@@ -1,91 +1,43 @@
-<div class="class-diary">
-  <mat-card>
-    <mat-card-title>Diário de Classe</mat-card-title>
-    <mat-card-content>
-      <div class="filters">
-        <mat-form-field appearance="fill">
-          <mat-label>Matéria</mat-label>
-          <mat-select [(value)]="selectedSubject" (selectionChange)="onFilterChange()">
-            @for (subject of subjects; track $index) {
-              <mat-option  [value]="subject.id">
-                {{ subject.name }}
-              </mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+<div class="filters">
+  <form [formGroup]="filterForm" class="filter-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Ano Escolar</mat-label>
+      <mat-select formControlName="year">
+        <mat-option *ngFor="let year of [2023, 2024, 2025]" [value]="year">{{ year }}</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Turma</mat-label>
-          <mat-select [(value)]="selectedClass" (selectionChange)="onFilterChange()">
-            @for (class of classes; track $index) {
-              <mat-option  [value]="class.id">
-                {{ class.name }}
-              </mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Turma</mat-label>
+      <mat-select formControlName="schoolClass">
+        <mat-option *ngFor="let turma of ['6 ano', '7 ano', '8 ano']" [value]="turma">{{ turma }}</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Dia da Semana</mat-label>
-          <mat-select [(value)]="selectedDay" (selectionChange)="onFilterChange()">
-            @for (day of weekdays; track $index) {
-              <mat-option [value]="day">
-                {{ day }}
-              </mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
+    <mat-form-field appearance="outline">
+      <mat-label>Matéria</mat-label>
+      <mat-select formControlName="subject">
+        <mat-option *ngFor="let subject of ['Matemática', 'Português', 'Ciências']" [value]="subject">
+          {{ subject }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-      @if (selectedDay && selectedSubject && selectedClass) {
-        <mat-card class="entry">
-          <mat-card-subtitle>
-            {{ selectedDay }} - Diário de Classe para {{ selectedClass }} - {{ selectedSubject }}
-          </mat-card-subtitle>
-          <mat-form-field appearance="fill" class="entry-field">
-            <mat-label>O que foi feito hoje</mat-label>
-            <textarea matInput [(ngModel)]="currentEntry.notes"></textarea>
-          </mat-form-field>
-          <div class="actions">
-            <button mat-raised-button color="primary" (click)="saveEntry()">Salvar</button>
-          </div>
-        </mat-card>
-      }
+    <mat-form-field appearance="outline">
+      <mat-label>Data</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </form>
+  <button mat-raised-button color="primary" (click)="updateFilters()">Atualizar Filtros</button>
+  <button mat-raised-button color="accent" (click)="openNewSummaryModal()">Novo Resumo</button>
+</div>
 
-      <div class="entries">
-        @if ((diaryEntries$ | async)?.length) {
-          <ng-container>
-            <h3>Resumo da Semana</h3>
-            <table mat-table [dataSource]="(diaryEntries$ | async) || []" class="mat-elevation-z8">
-              <!-- Dia -->
-              <ng-container matColumnDef="day">
-                <th mat-header-cell *matHeaderCellDef>Dia</th>
-                <td mat-cell *matCellDef="let entry">{{ entry.day }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="class">
-                <th mat-header-cell *matHeaderCellDef>Turma</th>
-                <td mat-cell *matCellDef="let entry">{{ entry.class }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="subject">
-                <th mat-header-cell *matHeaderCellDef>Matéria</th>
-                <td mat-cell *matCellDef="let entry">{{ entry.subject }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="notes">
-                <th mat-header-cell *matHeaderCellDef>Resumo</th>
-                <td mat-cell *matCellDef="let entry">{{ entry.notes }}</td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            </table>
-          </ng-container>
-        } @else {
-          <p class="no-entries">Nenhuma entrada de diário. Use os filtros acima para começar.</p>
-        }
-      </div>
-    </mat-card-content>
+<div class="summaries">
+  <mat-card *ngFor="let summary of summaries">
+    <mat-card-title>{{ summary.date | date: 'dd/MM/yyyy' }}</mat-card-title>
+    <mat-card-subtitle>{{ summary.schoolClass }} - {{ summary.subject }}</mat-card-subtitle>
+    <mat-card-content>{{ summary.summary }}</mat-card-content>
   </mat-card>
 </div>
