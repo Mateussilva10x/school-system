@@ -18,10 +18,10 @@ export class GradesComponent implements OnInit {
   classes = ['6 ano', '7 ano', '8 ano', '9 ano'];
   subjects = ['Matemática', 'Português', 'Ciências'];
   bimesters = [1, 2, 3, 4];
+
   students = this.studentStore.studentsSignal;
   loading = this.studentStore.loadingSignal;
   displayedColumns = ['name', 'gradeP1', 'gradeP2', 'average', 'gradeRec'];
-
 
   constructor(private fb: FormBuilder, private studentStore: StudentStore) {}
 
@@ -30,30 +30,44 @@ export class GradesComponent implements OnInit {
       year: [2024, Validators.required],
       class: ['6 ano', Validators.required],
       subject: ['Matemática', Validators.required],
-      bimester: ['1', Validators.required],
+      bimester: [1, Validators.required],
     });
-
-    this.onFilterChange();
   }
 
-  onFilterChange(): void {
+  async fetchStudents(): Promise<void> {
     const { year, class: className } = this.gradesForm.value;
+
     this.studentStore.loadStudents(year, className);
 
-    setTimeout(() => {
-      this.students().forEach((student) => {
-        this.addStudentControls(student.id);
-      });
-    }, 0);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    this.students().forEach((student) => {
+      this.addStudentControls(student.id);
+
+      const savedGrade = student.grades?.find(
+        (grade) =>
+          grade.subject === this.gradesForm.value.subject &&
+          grade.bimester === this.gradesForm.value.bimester
+      );
+
+      if (savedGrade) {
+        this.gradesForm.get(`gradeP1_${student.id}`)?.setValue(savedGrade.gradeP1);
+        this.gradesForm.get(`gradeP2_${student.id}`)?.setValue(savedGrade.gradeP2);
+        this.gradesForm.get(`gradeRec_${student.id}`)?.setValue(savedGrade.gradeRec);
+        this.gradesForm.get(`average_${student.id}`)?.setValue(savedGrade.average);
+      } else {
+        this.gradesForm.get(`gradeP1_${student.id}`)?.reset();
+        this.gradesForm.get(`gradeP2_${student.id}`)?.reset();
+        this.gradesForm.get(`gradeRec_${student.id}`)?.reset();
+        this.gradesForm.get(`average_${student.id}`)?.reset();
+      }
+    });
   }
 
+
+
   addStudentControls(studentId: number): void {
-    const controls = [
-      `gradeP1_${studentId}`,
-      `gradeP2_${studentId}`,
-      `gradeRec_${studentId}`,
-      `average_${studentId}`,
-    ];
+    const controls = [`gradeP1_${studentId}`, `gradeP2_${studentId}`, `gradeRec_${studentId}`, `average_${studentId}`];
 
     controls.forEach((controlName) => {
       if (!this.gradesForm.contains(controlName)) {
@@ -71,16 +85,6 @@ export class GradesComponent implements OnInit {
   }
 
 
-  onSubjectChange(): void {
-    this.students().forEach((student) => {
-      this.addStudentControls(student.id);
-      this.gradesForm.get(`gradeP1_${student.id}`)?.reset();
-      this.gradesForm.get(`gradeP2_${student.id}`)?.reset();
-      this.gradesForm.get(`gradeRec_${student.id}`)?.reset();
-      this.gradesForm.get(`average_${student.id}`)?.reset();
-    });
-  }
-
   getFormControl(controlName: string): FormControl {
     const control = this.gradesForm.get(controlName);
     if (!control) {
@@ -89,28 +93,42 @@ export class GradesComponent implements OnInit {
     return control as FormControl;
   }
 
-  saveGrades(): void {
-    const studentsWithGrades: Student[] = this.students().map((student) => ({
-      ...student,
-      grades: [
-        {
-          subject: this.gradesForm.value.subject,
-          bimester: this.gradesForm.value.bimester,
-          gradeP1: this.gradesForm.get(`gradeP1_${student.id}`)?.value,
-          gradeP2: this.gradesForm.get(`gradeP2_${student.id}`)?.value,
-          gradeRec: this.gradesForm.get(`gradeRec_${student.id}`)?.value,
-          average: this.gradesForm.get(`average_${student.id}`)?.value,
-        },
-      ],
-    }));
-
-    this.studentStore.saveGrades(studentsWithGrades);
-  }
 
   calculateAverage(studentId: number): void {
     const gradeP1 = this.gradesForm.get(`gradeP1_${studentId}`)?.value || 0;
     const gradeP2 = this.gradesForm.get(`gradeP2_${studentId}`)?.value || 0;
     const average = (gradeP1 + gradeP2) / 2;
+
     this.gradesForm.get(`average_${studentId}`)?.setValue(average);
+
+    if (average < 7) {
+      this.gradesForm.get(`gradeRec_${studentId}`)?.enable();
+    } else {
+      this.gradesForm.get(`gradeRec_${studentId}`)?.disable();
+      this.gradesForm.get(`gradeRec_${studentId}`)?.setValue(null);
+    }
   }
+
+  saveGrades(): void {
+    const studentsWithGrades: Student[] = this.students().map((student) => {
+      const existingGrades = student.grades || [];
+
+      const newGrade = {
+        subject: this.gradesForm.value.subject,
+        bimester: this.gradesForm.value.bimester,
+        gradeP1: this.gradesForm.get(`gradeP1_${student.id}`)?.value,
+        gradeP2: this.gradesForm.get(`gradeP2_${student.id}`)?.value,
+        gradeRec: this.gradesForm.get(`gradeRec_${student.id}`)?.value,
+        average: this.gradesForm.get(`average_${student.id}`)?.value,
+      };
+
+      return {
+        ...student,
+        grades: [...existingGrades, newGrade],
+      };
+    });
+
+    this.studentStore.saveGrades(studentsWithGrades);
+  }
+
 }
