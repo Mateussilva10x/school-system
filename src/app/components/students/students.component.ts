@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, computed, OnInit, signal, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MaterialModule } from '../../material.module';
 import { MatPaginator } from '@angular/material/paginator';
@@ -6,7 +6,8 @@ import { MatSort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { NewStudentComponent, StudentFormData } from '../new-student/new-student.component';
 import { ConfirmDialogData, ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { Student } from '../../interfaces/student';
+import { StudentService } from '../../services/student.service';
+import { Student } from '../../models/student';
 
 
 @Component({
@@ -16,46 +17,65 @@ import { Student } from '../../interfaces/student';
   templateUrl: './students.component.html',
   styleUrl: './students.component.scss'
 })
-export class StudentsComponent{
+export class StudentsComponent implements OnInit {
   currentYear = new Date().getFullYear();
   years: number[] = [this.currentYear, this.currentYear + 1];
-  turmas: string[] = ['6º ano', '7º ano', '8º ano', '9º ano'];
+  turmas: { id: string; name: string }[] = [
+    { id: '101', name: '6º Ano' },
+    { id: '102', name: '7º Ano' },
+    { id: '103', name: '8º Ano' },
+    { id: '104', name: '9º Ano' },
+  ];
 
-  selectedYear: number = this.currentYear;
-  selectedClass: string = '6º ano';
+  selectedYear = signal<number>(this.currentYear);
+  selectedClassId = signal<string>('101');
 
-  students: Student[] = [];
-  filteredStudents: Student[] = [];
-
-  constructor(private dialog: MatDialog) {}
-
-  applyFilters(): void {
-    this.filteredStudents = this.students.filter(
+  students = signal<Student[]>([]);
+  filteredStudents = computed(() =>
+    this.students().filter(
       (student) =>
-        student.year === this.selectedYear && student.class === this.selectedClass
-    );
+        student.classId === this.selectedClassId() &&
+        this.getYearFromStudent(student) === this.selectedYear()
+    )
+  );
+
+  constructor(private studentService: StudentService, private dialog: MatDialog) {}
+
+  ngOnInit(): void {
+    this.loadStudents();
   }
 
-  openStudentForm(): void {
+  loadStudents(): void {
+    const filters = { year: this.selectedYear(), classId: this.selectedClassId() };
+
+    this.studentService.getStudents(filters ?? null).subscribe((data) => {
+      console.log(data)
+      this.students.set(data);
+    });
+  }
+
+  openStudentForm(student?: Student): void {
     const dialogRef = this.dialog.open(NewStudentComponent, {
       width: '400px',
-      data: { year: this.selectedYear, class: this.selectedClass } as StudentFormData,
+      data: student ? { ...student } : { year: this.selectedYear(), classId: this.selectedClassId() } as StudentFormData,
     });
 
     dialogRef.afterClosed().subscribe((result: StudentFormData | undefined) => {
-      if (result && result.name && result.age && result.class && result.year) {
-        this.students.push(result as Student);
-        this.applyFilters();
-        alert('Aluno adicionado com sucesso!');
+      if (result) {
+        if (student) {
+          this.studentService.updateStudent(student.id, result as Student).subscribe(() => this.loadStudents());
+        } else {
+          this.studentService.addStudent(result as Student).subscribe(() => this.loadStudents());
+        }
       }
     });
   }
 
-  generateReport(student: Student): void {
+  deleteStudent(student: Student): void {
     const dialogData: ConfirmDialogData = {
-      title: 'Gerar Boletim',
-      message: `Deseja realmente gerar o boletim para o aluno ${student.name}?`,
-      confirmText: 'Sim, Gerar',
+      title: 'Deletar Aluno',
+      message: `Tem certeza que deseja excluir o aluno ${student.name}?`,
+      confirmText: 'Excluir',
       cancelText: 'Cancelar',
     };
 
@@ -66,8 +86,17 @@ export class StudentsComponent{
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
-        alert(`Boletim gerado para ${student.name}!`);
+        this.studentService.deleteStudent(student.id).subscribe(() => this.loadStudents());
       }
     });
+  }
+
+  generateReport(student: Student): void {
+    alert(`Boletim gerado para ${student.name}!`);
+  }
+
+  getYearFromStudent(student: Student): number {
+    const yearMatch = student.classId.match(/_(\d{4})$/);
+    return yearMatch ? parseInt(yearMatch[1]) : this.currentYear;
   }
 }
