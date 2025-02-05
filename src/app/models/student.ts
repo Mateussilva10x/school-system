@@ -3,4 +3,5 @@ export interface Student {
   name: string;
   birthDate: string;
   classId: string;
+  schoolYear: number;
 }

@@ -46,18 +46,17 @@ export class StudentsComponent implements OnInit {
   }
 
   loadStudents(): void {
-    const filters = { year: this.selectedYear(), classId: this.selectedClassId() };
+    const filters = { schoolYear: this.selectedYear(), classId: this.selectedClassId() };
 
     this.studentService.getStudents(filters ?? null).subscribe((data) => {
-      console.log(data)
       this.students.set(data);
     });
   }
 
   openStudentForm(student?: Student): void {
     const dialogRef = this.dialog.open(NewStudentComponent, {
-      width: '400px',
-      data: student ? { ...student } : { year: this.selectedYear(), classId: this.selectedClassId() } as StudentFormData,
+      width: '600px',
+      data: student ? { ...student } : { schoolYear: this.selectedYear(), classId: this.selectedClassId() } as StudentFormData,
     });
 
     dialogRef.afterClosed().subscribe((result: StudentFormData | undefined) => {

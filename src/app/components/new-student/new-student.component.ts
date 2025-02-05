@@ -1,7 +1,9 @@
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from './../../material.module';
-import { Component } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { StudentService } from '../../services/student.service';
+import { Student } from '../../models/student';
 
 export interface StudentFormData {
   name?: string;
@@ -17,53 +19,52 @@ export interface StudentFormData {
   templateUrl: './new-student.component.html',
   styleUrl: './new-student.component.scss'
 })
-export class NewStudentComponent {
-  studentForm: FormGroup;
-
-  turmas = ['6º ano', '7º ano', '8º ano', '9º ano'];
-  years = [new Date().getFullYear(), new Date().getFullYear() + 1];
+export class NewStudentComponent implements OnInit {
+  studentForm!: FormGroup;
+  years: number[] = [new Date().getFullYear(), new Date().getFullYear() + 1];
+  turmas = [
+    { id: '101', name: '6º Ano' },
+    { id: '102', name: '7º Ano' },
+    { id: '103', name: '8º Ano' },
+    { id: '104', name: '9º Ano' },
+  ];
 
   constructor(
     private fb: FormBuilder,
-    public dialogRef: MatDialogRef<NewStudentComponent>
-  ) {
+    private studentService: StudentService,
+    private dialogRef: MatDialogRef<NewStudentComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: Student
+  ) {}
+
+  ngOnInit(): void {
     this.studentForm = this.fb.group({
-      name: [
-        '',
-        [Validators.required, Validators.maxLength(50)],
-      ],
-      age: [
-        null,
-        [Validators.required, Validators.min(10), Validators.max(20)],
-      ],
-      class: ['', Validators.required],
-      year: ['', Validators.required],
+      name: [this.data?.name || '', [Validators.required, Validators.maxLength(50)]],
+      birthDate: [this.data?.birthDate || '', Validators.required],
+      classId: [this.data?.classId || '', Validators.required],
+      schoolYear: [this.data?.schoolYear || new Date().getFullYear(), Validators.required],
     });
   }
 
-  get name() {
-    return this.studentForm.get('name');
-  }
+  saveStudent(): void {
+    if (this.studentForm.invalid) return;
 
-  get age() {
-    return this.studentForm.get('age');
-  }
+    const studentData: Student = {
+      id: this.data?.id || crypto.randomUUID(),
+      ...this.studentForm.value,
+    };
 
-  get class() {
-    return this.studentForm.get('class');
-  }
-
-  get year() {
-    return this.studentForm.get('year');
-  }
-
-  save(): void {
-    if (this.studentForm.valid) {
-      this.dialogRef.close(this.studentForm.value);
+    if (this.data?.id) {
+      this.studentService.updateStudent(studentData.id, studentData).subscribe(() => {
+        this.dialogRef.close(true);
+      });
+    } else {
+      this.studentService.addStudent(studentData).subscribe(() => {
+        this.dialogRef.close(true);
+      });
     }
   }
 
   cancel(): void {
-    this.dialogRef.close();
+    this.dialogRef.close(false);
   }
 }

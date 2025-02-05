@@ -1,5 +1,26 @@
-.student-form {
-  display: grid;
-  grid-template-columns: 1fr;
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
+  padding: 32px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+}
+
+.cancel-btn {
+  color: #666;
 }

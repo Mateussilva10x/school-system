@@ -1,66 +1,44 @@
-<h2 mat-dialog-title>Novo Aluno</h2>
-<mat-dialog-content>
-  <form [formGroup]="studentForm" class="student-form">
-    <mat-form-field appearance="fill">
-      <mat-label>Nome</mat-label>
-      <input matInput formControlName="name" />
-      @if (name?.errors?.['required']) {
-        <mat-error>Nome é obrigatório.</mat-error>
-      }
-      @if (name?.errors?.['maxLength']) {
-        <mat-error>
-          Nome não pode ter mais que 50 caracteres.
-        </mat-error>
-      }
-    </mat-form-field>
+<h2 mat-dialog-title class="title">{{ data?.id ? 'Editar Aluno' : 'Novo Aluno' }}</h2>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Idade</mat-label>
-      <input matInput type="number" formControlName="age" />
-      @if (age?.errors?.['required']) {
-        <mat-error>Idade é obrigatória.</mat-error>
-      }
-      @if (age?.errors?.['min']) {
-        <mat-error>
-          Idade deve ser maior ou igual a 10.
-        </mat-error>
-      }
-      @if (age?.errors?.['max']) {
-        <mat-error>
-          Idade deve ser menor ou igual a 20.
-        </mat-error>
-      }
-    </mat-form-field>
+<mat-dialog-content class="form-container" [formGroup]="studentForm">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nome</mat-label>
+    <input matInput formControlName="name" />
+    <mat-error *ngIf="studentForm.get('name')?.invalid">
+      Nome obrigatório (máx 50 caracteres).
+    </mat-error>
+  </mat-form-field>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Turma</mat-label>
-      <mat-select formControlName="class">
-        @for (turma of turmas; track $index) {
-          <mat-option [value]="turma">{{ turma }}</mat-option>
-        }
-      </mat-select>
-      @if (class?.errors?.['required']) {
-        <mat-error>Turma é obrigatória.</mat-error>
-      }
-    </mat-form-field>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Data de Nascimento</mat-label>
+    <input matInput formControlName="birthDate" type="date" />
+    <mat-error *ngIf="studentForm.get('birthDate')?.invalid">
+      Data obrigatória.
+    </mat-error>
+  </mat-form-field>
 
-    <mat-form-field appearance="fill">
-      <mat-label>Ano Letivo</mat-label>
-      <mat-select formControlName="year">
-        @for (year of years; track $index) {
-          <mat-option [value]="year">{{ year }}</mat-option>
-        }
-      </mat-select>
-      @if (year?.errors?.['required']) {
-        <mat-error>Ano letivo é obrigatório.</mat-error>
-      }
-    </mat-form-field>
-  </form>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Turma</mat-label>
+    <mat-select formControlName="classId">
+      <mat-option *ngFor="let turma of turmas" [value]="turma.id">
+        {{ turma.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Ano Letivo</mat-label>
+    <mat-select formControlName="schoolYear">
+      <mat-option *ngFor="let year of years" [value]="year">
+        {{ year }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Cancelar</button>
-  <button mat-raised-button color="primary" [disabled]="!studentForm.valid" (click)="save()">
-    Salvar
+<mat-dialog-actions align="end" class="actions">
+  <button mat-button (click)="cancel()" class="cancel-btn">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="saveStudent()" [disabled]="studentForm.invalid">
+    {{ data?.id ? 'Atualizar' : 'Salvar' }}
   </button>
 </mat-dialog-actions>

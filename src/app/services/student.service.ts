@@ -9,33 +9,26 @@ import moment from 'moment';
 })
 export class StudentService {
   private students: Student[] = [
-    { id: '1', name: 'João Silva', birthDate: moment(new Date(2008, 5, 15)).format('DD/MM/YYYY') , classId: '101' },
-    { id: '2', name: 'Maria Oliveira', birthDate: moment(new Date(2007, 8, 22)).format('DD/MM/YYYY'), classId: '102' },
-    { id: '3', name: 'Carlos Santos', birthDate: moment(new Date(2009, 2, 10)).format('DD/MM/YYYY'), classId: '101' },
-    { id: '4', name: 'Ana Costa', birthDate: moment(new Date(2008, 10, 5)).format('DD/MM/YYYY'), classId: '102' },
+    { id: '1', name: 'João Silva', birthDate: "2008-02-15" , classId: '101', schoolYear: 2025 },
+    { id: '2', name: 'Maria Oliveira', birthDate: "2007-08-22", classId: '102', schoolYear: 2025 },
+    { id: '3', name: 'Carlos Santos', birthDate: "2009-10-02", classId: '101', schoolYear: 2025 },
+    { id: '4', name: 'Ana Costa', birthDate: "2010-10-08", classId: '102', schoolYear: 2025 },
   ];
 
   constructor() {}
 
-  getStudents(filters?: { year?: number; classId?: string }): Observable<Student[]> {
+  getStudents(filters?: { schoolYear?: number; classId?: string }): Observable<Student[]> {
     let filteredStudents = this.students;
 
     if (filters?.classId) {
       filteredStudents = filteredStudents.filter(student => student.classId === filters.classId);
     }
 
-    if (filters?.year) {
-      filteredStudents = filteredStudents.filter(
-        student => new Date(student.birthDate).getFullYear() === filters.year
-      );
+    if (filters?.schoolYear) {
+      filteredStudents = filteredStudents.filter(student => student.schoolYear === filters.schoolYear);
     }
 
-    console.log(filteredStudents)
     return of(filteredStudents);
-  }
-
-  getStudentById(id: string): Observable<Student | undefined> {
-    return of(this.students.find(student => student.id === id));
   }
 
   addStudent(student: Student): Observable<Student> {
