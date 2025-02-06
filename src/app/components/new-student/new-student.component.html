@@ -11,7 +11,9 @@
 
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Data de Nascimento</mat-label>
-    <input matInput formControlName="birthDate" type="date" />
+    <input matInput formControlName="birthDate" [matDatepicker]="datepicker" [max]="NOW" [min]="minDefaultDate" />
+    <mat-datepicker-toggle matIconSuffix [for]="datepicker"></mat-datepicker-toggle>
+    <mat-datepicker #datepicker></mat-datepicker>
     <mat-error *ngIf="studentForm.get('birthDate')?.invalid">
       Data obrigatória.
     </mat-error>

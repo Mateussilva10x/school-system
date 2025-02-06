@@ -4,6 +4,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { StudentService } from '../../services/student.service';
 import { Student } from '../../models/student';
+import moment from 'moment';
 
 export interface StudentFormData {
   name?: string;
@@ -20,6 +21,8 @@ export interface StudentFormData {
   styleUrl: './new-student.component.scss'
 })
 export class NewStudentComponent implements OnInit {
+  readonly NOW = new Date();
+  readonly minDefaultDate = new Date(1910, 1 ,1);
   studentForm!: FormGroup;
   years: number[] = [new Date().getFullYear(), new Date().getFullYear() + 1];
   turmas = [
@@ -38,8 +41,8 @@ export class NewStudentComponent implements OnInit {
 
   ngOnInit(): void {
     this.studentForm = this.fb.group({
-      name: [this.data?.name || '', [Validators.required, Validators.maxLength(50)]],
-      birthDate: [this.data?.birthDate || '', Validators.required],
+      name: [this.data?.name || '', [Validators.required, Validators.maxLength(50), Validators.minLength(3)]],
+      birthDate: [moment(this.data.birthDate).toDate() || '', Validators.required],
       classId: [this.data?.classId || '', Validators.required],
       schoolYear: [this.data?.schoolYear || new Date().getFullYear(), Validators.required],
     });
