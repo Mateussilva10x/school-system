@@ -31,6 +31,10 @@ export class StudentService {
     return of(filteredStudents);
   }
 
+  getStudentCountByClass(classId: string): number {
+    return this.students.filter(student => student.classId === classId).length;
+  }
+
   addStudent(student: Student): Observable<Student> {
     this.students.push(student);
     return of(student);

@@ -1,4 +1,4 @@
-<h2 mat-dialog-title class="title">{{ data?.id ? 'Editar Aluno' : 'Novo Aluno' }}</h2>
+<h2 mat-dialog-title class="title">{{ data.id ? 'Editar Aluno' : 'Novo Aluno' }}</h2>
 
 <mat-dialog-content class="form-container" [formGroup]="studentForm">
   <mat-form-field appearance="outline" class="full-width">
@@ -41,6 +41,6 @@
 <mat-dialog-actions align="end" class="actions">
   <button mat-button (click)="cancel()" class="cancel-btn">Cancelar</button>
   <button mat-raised-button color="primary" (click)="saveStudent()" [disabled]="studentForm.invalid">
-    {{ data?.id ? 'Atualizar' : 'Salvar' }}
+    {{ data.id ? 'Atualizar' : 'Salvar' }}
   </button>
 </mat-dialog-actions>

@@ -41,10 +41,10 @@ export class NewStudentComponent implements OnInit {
 
   ngOnInit(): void {
     this.studentForm = this.fb.group({
-      name: [this.data?.name || '', [Validators.required, Validators.maxLength(50), Validators.minLength(3)]],
-      birthDate: [moment(this.data.birthDate).toDate() || '', Validators.required],
-      classId: [this.data?.classId || '', Validators.required],
-      schoolYear: [this.data?.schoolYear || new Date().getFullYear(), Validators.required],
+      name: [this.data?.name, [Validators.required, Validators.maxLength(50), Validators.minLength(3)]],
+      birthDate: [moment(this.data?.birthDate).toDate(), Validators.required],
+      classId: [this.data?.classId, Validators.required],
+      schoolYear: [this.data?.schoolYear  , Validators.required],
     });
   }
 

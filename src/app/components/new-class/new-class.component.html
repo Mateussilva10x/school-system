@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>{{ classForm.value.id ? 'Editar Turma' : 'Nova Turma' }}</h2>
+
+<mat-dialog-content [formGroup]="classForm" class="form-container">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label class="index">Nome da Turma</mat-label>
+    <input matInput formControlName="name" />
+    <mat-error *ngIf="classForm.get('name')?.hasError('required')">
+      Nome da turma obrigatório.
+    </mat-error>
+    <mat-error *ngIf="classForm.get('name')?.hasError('maxlength')">
+      Máximo de 50 caracteres.
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Ano Letivo</mat-label>
+    <mat-select formControlName="schoolYear">
+      <mat-option *ngFor="let year of years" [value]="year">
+        {{ year }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="actions">
+  <button mat-button (click)="cancel()" class="cancel-btn">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="saveClass()" [disabled]="classForm.invalid">
+    {{ classForm.value.id ? 'Atualizar' : 'Salvar' }}
+  </button>
+</mat-dialog-actions>

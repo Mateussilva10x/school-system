@@ -1,14 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MaterialModule } from '../../material.module';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
-
-export interface Class {
-  id: number;
-  name: string;
-  studentsCount: number;
-}
+import { MatDialog } from '@angular/material/dialog';
+import { Class } from '../../models/class';
+import { ClassService } from '../../services/class.service';
+import { NewClassComponent } from '../new-class/new-class.component';
 
 @Component({
   selector: 'app-classes',
@@ -18,24 +13,30 @@ export interface Class {
   styleUrl: './classes.component.scss'
 })
 export class ClassesComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'name', 'studentsCount', 'actions'];
-  dataSource = new MatTableDataSource<Class>([
-    { id: 1, name: 'Turma A', studentsCount: 30 },
-    { id: 2, name: 'Turma B', studentsCount: 25 },
-    { id: 3, name: 'Turma C', studentsCount: 20 },
-  ]);
+  classrooms: Class[] = [];
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
-
-  constructor() {}
+  constructor(private classService: ClassService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    this.loadClasses();
   }
 
-  viewClassDetails(classId: number): void {
-    alert(`Detalhes da turma com ID: ${classId}`);
+  loadClasses(): void {
+    this.classService.getClassrooms().subscribe((classes) => {
+      this.classrooms = classes.map((cls) => ({
+        ...cls,
+        totalStudents: this.classService.getTotalStudents(cls.id),
+      }));
+    });
+  }
+
+  openClassForm(): void {
+    const dialogRef = this.dialog.open(NewClassComponent, { width: '600px' });
+
+    dialogRef.afterClosed().subscribe((result: Class | undefined) => {
+      if (result) {
+        this.classService.addClassroom(result).subscribe(() => this.loadClasses());
+      }
+    });
   }
 }

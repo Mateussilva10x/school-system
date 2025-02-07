@@ -1,0 +1,21 @@
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+}
+
+.cancel-btn {
+  color: #666;
+}

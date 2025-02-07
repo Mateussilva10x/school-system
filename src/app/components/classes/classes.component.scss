@@ -1,15 +1,17 @@
-.classes {
-  margin: 16px;
-}
+.classes-container {
+  padding: 20px;
 
-mat-card {
-  padding: 16px;
-}
+  h1 {
+    text-align: center;
+  }
 
-table {
-  width: 100%;
-}
+  button {
+    display: block;
+    margin: 10px auto;
+  }
 
-mat-header-cell, mat-cell {
-  text-align: center;
+  table {
+    width: 100%;
+    margin-top: 20px;
+  }
 }
